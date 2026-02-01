@@ -1,0 +1,15 @@
+services:
+  mysql-db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: pass123
+      MYSQL_DATABASE: url_db
+
+  app:
+    build: .
+    depends_on:
+      - mysql-db
+    environment:
+      DATABASE_URL: mysql+pymysql://root:pass123@mysql-db/url_db
+    ports:
+      - "8000:8000"

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart URL Shortener</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg,#1e3a8a,#9333ea);
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+.container {
+  backdrop-filter: blur(20px);
+  background: rgba(255,255,255,0.1);
+  padding:40px;
+  border-radius:20px;
+  text-align:center;
+  width:95%;
+  max-width:450px;
+}
+input,button {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:none;
+}
+button {
+  background:#22d3ee;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.3s;
+    width:100%;
+    padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:none;
+}
+button:hover { transform:scale(1.05); }
+.result {
+    margin:10px 10px 10px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    font-size: 13px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.25s ease;
+    }
+.result button {
+    margin:10px 10px 10px 10px;
+    padding: 5px 5px;
+    font-size: 11px;
+    width: 15%;
+    height: 30px;
+    background: #22d3ee;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+.history-title {
+    margin-top: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #e0f2fe;
+}
+
+.history-container {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.history-item {
+    background: rgba(155, 200, 201, 0.09);
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.25s ease;
+}
+
+.history-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(4px);
+}
+
+.history-item a {
+    color: #38bdf8;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 75%;
+}
+
+.history-item button {
+    padding: 5px 5px;
+    font-size: 11px;
+    width: 15%;
+    height: 30px;
+    background: #22d3ee;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+<h2>🔗 Smart URL Shortener</h2>
+<input id="longUrl" placeholder="Paste long URL">
+<button onclick="shortenUrl()">Shorten URL</button>
+
+<div class="result" id="result"></div>
+
+<h3 class="history-title">Recent Links</h3>
+<div id="history" class="history-container"></div>
+
+</div>
+
+<script>
+let historyList=[];
+
+async function shortenUrl(){
+  const url=document.getElementById("longUrl").value;
+  document.getElementById("result").innerHTML="⏳ Generating...";
+  const res=await fetch("http://127.0.0.1:8000/shorten",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({original_url:url})
+  });
+  const data=await res.json();
+  // language=HTML
+    document.getElementById("result").innerHTML=
+    `<a href="${data.short_url}" target="_blank">${data.short_url}</a>
+     <button onclick="copyLink()">Copy</button>`;
+  addToHistory(data.short_url);
+}
+
+function copyLink(){
+  const link=document.querySelector("#result a").href;
+  navigator.clipboard.writeText(link);
+  alert("Copied!");
+}
+
+function addToHistory(url) {
+    historyList.unshift(url);        // Add newest on top
+    historyList = historyList.slice(0, 3);  // Keep only 3 items
+
+    const container = document.getElementById("history");
+
+    container.innerHTML = historyList.map(u => `
+        <div class="history-item">
+            <a href="${u}" target="_blank">${u}</a>
+            <button onclick="navigator.clipboard.writeText('${u}')">Copy</button>
+        </div>
+    `).join("");
+}
+</script>
+</body>
+</html>
